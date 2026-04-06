@@ -7,10 +7,14 @@ This SDK is designed for low-change, low-touch customer integration.
 - Explicit timeout and retry controls.
 - Streaming chat support (`text/event-stream`).
 
+## Retry safety
+- **429 / 5xx** automatic retries apply only to **GET** and **HEAD** (idempotent reads). **POST / PUT / PATCH** are not retried on those status codes to avoid duplicate side effects.
+- **Network / timeout** failures may still be retried for all methods, up to `maxRetries`.
+
 ## Install
 `npm install @egroupai/ai-sandbox-sdk-typescript`
 
 ## First Steps
-1. Configure `base_url` and `api_key`.
-2. Call `create_agent`.
-3. Create chat channel and send the first message.
+1. Configure `baseUrl` and `apiKey` on `AiSandboxClient`.
+2. Call `createAgent(...)`.
+3. Create a chat channel with `createChatChannel(...)` and send the first message with `sendChat(...)` or `sendChatStream(...)`.

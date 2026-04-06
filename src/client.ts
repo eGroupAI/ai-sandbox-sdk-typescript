@@ -1,4 +1,5 @@
 import { ApiError } from "./errors.js";
+import { shouldRetryTransientHttpStatus } from "./http-policy.js";
 import type { ClientConfig, JsonValue } from "./types.js";
 
 export class AiSandboxClient {
@@ -39,7 +40,10 @@ export class AiSandboxClient {
         });
         clearTimeout(timer);
 
-        if ([429, 500, 502, 503, 504].includes(response.status) && attempt < this.maxRetries) {
+        if (
+          shouldRetryTransientHttpStatus(method, response.status) &&
+          attempt < this.maxRetries
+        ) {
           attempt += 1;
           await new Promise((r) => setTimeout(r, 200 * attempt));
           continue;
@@ -52,12 +56,12 @@ export class AiSandboxClient {
         return response;
       } catch (error) {
         clearTimeout(timer);
+        if (error instanceof ApiError) throw error;
         if (attempt < this.maxRetries) {
           attempt += 1;
           await new Promise((r) => setTimeout(r, 200 * attempt));
           continue;
         }
-        if (error instanceof ApiError) throw error;
         throw new Error(`Network error: ${String(error)}`);
       }
     }
