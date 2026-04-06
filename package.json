@@ -1,0 +1,22 @@
+{
+  "name": "@egroupai/ai-sandbox-sdk-typescript",
+  "version": "1.0.0",
+  "description": "Official TypeScript SDK for AI Sandbox Integration API",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist",
+    "prepare": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.0"
+  }
+}
