@@ -1,5 +1,9 @@
 import { ApiError } from "./errors.js";
-import { shouldRetryTransientHttpStatus } from "./http-policy.js";
+import {
+  getRetryDelayMs,
+  shouldRetryNetworkError,
+  shouldRetryTransientHttpStatus,
+} from "./http-policy.js";
 import type { ClientConfig, JsonValue } from "./types.js";
 
 export class AiSandboxClient {
@@ -38,14 +42,20 @@ export class AiSandboxClient {
           body: body === undefined ? undefined : JSON.stringify(body),
           signal: controller.signal,
         });
-        clearTimeout(timer);
 
         if (
           shouldRetryTransientHttpStatus(method, response.status) &&
           attempt < this.maxRetries
         ) {
+          if (response.body) {
+            try {
+              await response.body.cancel();
+            } catch {
+              // Ignore cancel errors; retry decision is already made.
+            }
+          }
           attempt += 1;
-          await new Promise((r) => setTimeout(r, 200 * attempt));
+          await new Promise((r) => setTimeout(r, getRetryDelayMs(attempt)));
           continue;
         }
 
@@ -55,14 +65,16 @@ export class AiSandboxClient {
         }
         return response;
       } catch (error) {
-        clearTimeout(timer);
         if (error instanceof ApiError) throw error;
-        if (attempt < this.maxRetries) {
+        if (shouldRetryNetworkError(error) && attempt < this.maxRetries) {
           attempt += 1;
-          await new Promise((r) => setTimeout(r, 200 * attempt));
+          await new Promise((r) => setTimeout(r, getRetryDelayMs(attempt)));
           continue;
         }
+        if (error instanceof Error) throw error;
         throw new Error(`Network error: ${String(error)}`);
+      } finally {
+        clearTimeout(timer);
       }
     }
   }

@@ -38,13 +38,21 @@ const agent = await client.createAgent({
   agentDisplayName: "Support Agent",
   agentDescription: "Handles customer inquiries",
 });
-const agentId = Number((agent as any)?.payload?.agentId ?? 0);
+const agentPayload =
+  agent && typeof agent === "object"
+    ? (agent as { payload?: Record<string, unknown> }).payload
+    : undefined;
+const agentId = Number(agentPayload?.agentId ?? 0);
 
 const channel = await client.createChatChannel(agentId, {
   title: "Web Chat",
   visitorId: "visitor-001",
 });
-const channelId = String((channel as any)?.payload?.channelId ?? "");
+const channelPayload =
+  channel && typeof channel === "object"
+    ? (channel as { payload?: Record<string, unknown> }).payload
+    : undefined;
+const channelId = String(channelPayload?.channelId ?? "");
 
 for await (const chunk of client.sendChatStream(agentId, {
   channelId,
@@ -67,6 +75,7 @@ npm install @egroupai/ai-sandbox-sdk-typescript
 | --- | --- |
 | API Coverage | 11 operations (Agent / Chat / Knowledge Base) |
 | Stream Mode | `text/event-stream` with `[DONE]` handling |
+| Retry Safety | 429/5xx auto-retry for GET/HEAD + capped exponential backoff |
 | Error Surface | `ApiError` with status/body/traceId |
 | Validation | Production-host integration verified |
 
