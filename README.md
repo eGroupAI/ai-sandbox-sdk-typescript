@@ -86,3 +86,7 @@ npm install @egroupai/ai-sandbox-sdk-typescript
 - [Integration Guide](docs/INTEGRATION.md)
 - [Quickstart Example](examples/quickstart.ts)
 - [Repository](https://github.com/eGroupAI/ai-sandbox-sdk-typescript)
+
+## License
+
+This SDK is released under the Apache-2.0 license.
