@@ -84,6 +84,7 @@ npm install @egroupai/ai-sandbox-sdk-typescript
 | Retry Safety | 429/5xx auto-retry for GET/HEAD + capped exponential backoff |
 | Error Surface | `ApiError` with status/body/traceId |
 | Validation | Production-host integration verified |
+| Release Readiness | Run `draft-release-train` and `guards` checks before merge |
 
 ## Links
 
